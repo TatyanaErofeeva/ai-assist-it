@@ -24,6 +24,14 @@ func NewTodoHandler() *TodoHandler {
 	}
 }
 
+// ListTodos возвращает все задачи.
+//
+// @Summary      Список задач
+// @Description  Возвращает все задачи. Массив Todo лежит в поле data. Если задач нет, data равен null.
+// @Tags         todos
+// @Produce      json
+// @Success      200 {object} models.SuccessResponse{data=[]models.Todo} "Список задач"
+// @Router       /todos [get]
 func (h *TodoHandler) ListTodos(w http.ResponseWriter, r *http.Request) {
 	var todos []models.Todo
 	for _, todo := range h.todos {
@@ -38,6 +46,17 @@ func (h *TodoHandler) ListTodos(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// GetTodo возвращает задачу по идентификатору.
+//
+// @Summary      Получить задачу
+// @Description  Возвращает одну задачу. Объект Todo лежит в поле data.
+// @Tags         todos
+// @Produce      json
+// @Param        id path int true "Идентификатор задачи"
+// @Success      200 {object} models.SuccessResponse{data=models.Todo} "Найденная задача"
+// @Failure      400 {string} string "Неверный ID"
+// @Failure      404 {string} string "Задача не найдена"
+// @Router       /todos/{id} [get]
 func (h *TodoHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
@@ -60,6 +79,17 @@ func (h *TodoHandler) GetTodo(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// CreateTodo создаёт задачу.
+//
+// @Summary      Создать задачу
+// @Description  Создаёт задачу, назначает ей идентификатор и возвращает объект Todo в поле data.
+// @Tags         todos
+// @Accept       json
+// @Produce      json
+// @Param        request body models.CreateTodoRequest true "Данные новой задачи"
+// @Success      201 {object} models.SuccessResponse{data=models.Todo} "Созданная задача"
+// @Failure      400 {string} string "Невалидный запрос"
+// @Router       /todos [post]
 func (h *TodoHandler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 	var req models.CreateTodoRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -89,6 +119,19 @@ func (h *TodoHandler) CreateTodo(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// UpdateTodo частично обновляет задачу.
+//
+// @Summary      Обновить задачу
+// @Description  Обновляет переданные поля задачи и возвращает актуальный объект Todo в поле data.
+// @Tags         todos
+// @Accept       json
+// @Produce      json
+// @Param        id path int true "Идентификатор задачи"
+// @Param        request body models.UpdateTodoRequest true "Поля для обновления"
+// @Success      200 {object} models.SuccessResponse{data=models.Todo} "Обновлённая задача"
+// @Failure      400 {string} string "Неверный ID или невалидный запрос"
+// @Failure      404 {string} string "Задача не найдена"
+// @Router       /todos/{id} [put]
 func (h *TodoHandler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
@@ -130,6 +173,16 @@ func (h *TodoHandler) UpdateTodo(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// DeleteTodo удаляет задачу.
+//
+// @Summary      Удалить задачу
+// @Description  Удаляет задачу по идентификатору. Тело ответа пустое.
+// @Tags         todos
+// @Param        id path int true "Идентификатор задачи"
+// @Success      204 "Задача удалена"
+// @Failure      400 {string} string "Неверный ID"
+// @Failure      404 {string} string "Задача не найдена"
+// @Router       /todos/{id} [delete]
 func (h *TodoHandler) DeleteTodo(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)

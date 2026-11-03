@@ -1,0 +1,661 @@
+{
+    "schemes": [
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "REST API для управления пользователями и задачами. Данные хранятся в памяти процесса и пропадают после перезапуска.",
+        "title": "Todo API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "Todo API Support",
+            "email": "support@example.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api/v1",
+    "paths": {
+        "/todos": {
+            "get": {
+                "description": "Возвращает все задачи. Массив Todo лежит в поле data. Если задач нет, data равен null.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "todos"
+                ],
+                "summary": "Список задач",
+                "responses": {
+                    "200": {
+                        "description": "Список задач",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.Todo"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создаёт задачу, назначает ей идентификатор и возвращает объект Todo в поле data.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "todos"
+                ],
+                "summary": "Создать задачу",
+                "parameters": [
+                    {
+                        "description": "Данные новой задачи",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateTodoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Созданная задача",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Todo"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Невалидный запрос",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/todos/{id}": {
+            "get": {
+                "description": "Возвращает одну задачу. Объект Todo лежит в поле data.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "todos"
+                ],
+                "summary": "Получить задачу",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Идентификатор задачи",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Найденная задача",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Todo"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Задача не найдена",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Обновляет переданные поля задачи и возвращает актуальный объект Todo в поле data.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "todos"
+                ],
+                "summary": "Обновить задачу",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Идентификатор задачи",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Поля для обновления",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateTodoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Обновлённая задача",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.Todo"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный ID или невалидный запрос",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Задача не найдена",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Удаляет задачу по идентификатору. Тело ответа пустое.",
+                "tags": [
+                    "todos"
+                ],
+                "summary": "Удалить задачу",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Идентификатор задачи",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Задача удалена"
+                    },
+                    "400": {
+                        "description": "Неверный ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Задача не найдена",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/users": {
+            "get": {
+                "description": "Возвращает всех пользователей. Массив User лежит в поле data. Если пользователей нет, data равен null.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Список пользователей",
+                "responses": {
+                    "200": {
+                        "description": "Список пользователей",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/models.User"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Создаёт пользователя, назначает ему идентификатор и возвращает объект User в поле data.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Создать пользователя",
+                "parameters": [
+                    {
+                        "description": "Данные нового пользователя",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Созданный пользователь",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Невалидный запрос",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/users/{id}": {
+            "get": {
+                "description": "Возвращает одного пользователя. Объект User лежит в поле data.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Получить пользователя",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Идентификатор пользователя",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Найденный пользователь",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Пользователь не найден",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Обновляет переданные поля пользователя и возвращает актуальный объект User в поле data.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Обновить пользователя",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Идентификатор пользователя",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Поля для обновления",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.UpdateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Обновлённый пользователь",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.SuccessResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный ID или невалидный запрос",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Пользователь не найден",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Удаляет пользователя по идентификатору. Тело ответа пустое.",
+                "tags": [
+                    "users"
+                ],
+                "summary": "Удалить пользователя",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Идентификатор пользователя",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Пользователь удалён"
+                    },
+                    "400": {
+                        "description": "Неверный ID",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Пользователь не найден",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.CreateTodoRequest": {
+            "type": "object",
+            "required": [
+                "title",
+                "user_id"
+            ],
+            "properties": {
+                "description": {
+                    "description": "Описание задачи, не длиннее 1000 символов.",
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "2 литра, 3.2%"
+                },
+                "done": {
+                    "description": "Начальный статус выполнения.",
+                    "type": "boolean",
+                    "example": false
+                },
+                "title": {
+                    "description": "Заголовок задачи. Обязательное поле, не длиннее 200 символов.",
+                    "type": "string",
+                    "maxLength": 200,
+                    "example": "Купить молоко"
+                },
+                "user_id": {
+                    "description": "Идентификатор пользователя, которому принадлежит задача.",
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "models.CreateUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name"
+            ],
+            "properties": {
+                "email": {
+                    "description": "Email. Обязательное поле, должно быть корректным адресом.",
+                    "type": "string",
+                    "example": "anna@example.com"
+                },
+                "name": {
+                    "description": "Имя пользователя. Обязательное поле, не длиннее 100 символов.",
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Анна"
+                }
+            }
+        },
+        "models.SuccessResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "description": "Полезная нагрузка. Отсутствует, если данных нет."
+                },
+                "success": {
+                    "description": "Признак успешного выполнения запроса.",
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "models.Todo": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "Время создания в формате RFC3339.",
+                    "type": "string",
+                    "example": "2026-11-03T08:00:00Z"
+                },
+                "description": {
+                    "description": "Подробное описание, до 1000 символов.",
+                    "type": "string",
+                    "example": "2 литра, 3.2%"
+                },
+                "done": {
+                    "description": "Признак выполнения.",
+                    "type": "boolean",
+                    "example": false
+                },
+                "id": {
+                    "description": "Уникальный идентификатор задачи.",
+                    "type": "integer",
+                    "example": 1
+                },
+                "title": {
+                    "description": "Краткий заголовок, до 200 символов.",
+                    "type": "string",
+                    "example": "Купить молоко"
+                },
+                "updated_at": {
+                    "description": "Время последнего изменения в формате RFC3339.",
+                    "type": "string",
+                    "example": "2026-11-03T08:00:00Z"
+                },
+                "user_id": {
+                    "description": "Идентификатор владельца задачи.",
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "models.UpdateTodoRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "description": "Новое описание. Необязательное поле, не длиннее 1000 символов.",
+                    "type": "string",
+                    "maxLength": 1000,
+                    "example": "Бородинский"
+                },
+                "done": {
+                    "description": "Новый статус выполнения.",
+                    "type": "boolean",
+                    "example": true
+                },
+                "title": {
+                    "description": "Новый заголовок. Необязательное поле, не длиннее 200 символов.",
+                    "type": "string",
+                    "maxLength": 200,
+                    "example": "Купить хлеб"
+                }
+            }
+        },
+        "models.UpdateUserRequest": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "description": "Новый email. Необязательное поле.",
+                    "type": "string",
+                    "example": "anna.new@example.com"
+                },
+                "name": {
+                    "description": "Новое имя. Необязательное поле, не длиннее 100 символов.",
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Анна Иванова"
+                }
+            }
+        },
+        "models.User": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "Время создания учётной записи в формате RFC3339.",
+                    "type": "string",
+                    "example": "2026-11-03T08:00:00Z"
+                },
+                "email": {
+                    "description": "Адрес электронной почты.",
+                    "type": "string",
+                    "example": "anna@example.com"
+                },
+                "id": {
+                    "description": "Уникальный идентификатор пользователя.",
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "description": "Отображаемое имя, до 100 символов.",
+                    "type": "string",
+                    "example": "Анна"
+                }
+            }
+        }
+    }
+}

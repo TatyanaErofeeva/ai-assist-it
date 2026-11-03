@@ -1,0 +1,438 @@
+basePath: /api/v1
+definitions:
+  models.CreateTodoRequest:
+    properties:
+      description:
+        description: Описание задачи, не длиннее 1000 символов.
+        example: 2 литра, 3.2%
+        maxLength: 1000
+        type: string
+      done:
+        description: Начальный статус выполнения.
+        example: false
+        type: boolean
+      title:
+        description: Заголовок задачи. Обязательное поле, не длиннее 200 символов.
+        example: Купить молоко
+        maxLength: 200
+        type: string
+      user_id:
+        description: Идентификатор пользователя, которому принадлежит задача.
+        example: 1
+        type: integer
+    required:
+    - title
+    - user_id
+    type: object
+  models.CreateUserRequest:
+    properties:
+      email:
+        description: Email. Обязательное поле, должно быть корректным адресом.
+        example: anna@example.com
+        type: string
+      name:
+        description: Имя пользователя. Обязательное поле, не длиннее 100 символов.
+        example: Анна
+        maxLength: 100
+        type: string
+    required:
+    - email
+    - name
+    type: object
+  models.SuccessResponse:
+    properties:
+      data:
+        description: Полезная нагрузка. Отсутствует, если данных нет.
+      success:
+        description: Признак успешного выполнения запроса.
+        example: true
+        type: boolean
+    type: object
+  models.Todo:
+    properties:
+      created_at:
+        description: Время создания в формате RFC3339.
+        example: "2026-11-03T08:00:00Z"
+        type: string
+      description:
+        description: Подробное описание, до 1000 символов.
+        example: 2 литра, 3.2%
+        type: string
+      done:
+        description: Признак выполнения.
+        example: false
+        type: boolean
+      id:
+        description: Уникальный идентификатор задачи.
+        example: 1
+        type: integer
+      title:
+        description: Краткий заголовок, до 200 символов.
+        example: Купить молоко
+        type: string
+      updated_at:
+        description: Время последнего изменения в формате RFC3339.
+        example: "2026-11-03T08:00:00Z"
+        type: string
+      user_id:
+        description: Идентификатор владельца задачи.
+        example: 1
+        type: integer
+    type: object
+  models.UpdateTodoRequest:
+    properties:
+      description:
+        description: Новое описание. Необязательное поле, не длиннее 1000 символов.
+        example: Бородинский
+        maxLength: 1000
+        type: string
+      done:
+        description: Новый статус выполнения.
+        example: true
+        type: boolean
+      title:
+        description: Новый заголовок. Необязательное поле, не длиннее 200 символов.
+        example: Купить хлеб
+        maxLength: 200
+        type: string
+    type: object
+  models.UpdateUserRequest:
+    properties:
+      email:
+        description: Новый email. Необязательное поле.
+        example: anna.new@example.com
+        type: string
+      name:
+        description: Новое имя. Необязательное поле, не длиннее 100 символов.
+        example: Анна Иванова
+        maxLength: 100
+        type: string
+    type: object
+  models.User:
+    properties:
+      created_at:
+        description: Время создания учётной записи в формате RFC3339.
+        example: "2026-11-03T08:00:00Z"
+        type: string
+      email:
+        description: Адрес электронной почты.
+        example: anna@example.com
+        type: string
+      id:
+        description: Уникальный идентификатор пользователя.
+        example: 1
+        type: integer
+      name:
+        description: Отображаемое имя, до 100 символов.
+        example: Анна
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: support@example.com
+    name: Todo API Support
+  description: REST API для управления пользователями и задачами. Данные хранятся
+    в памяти процесса и пропадают после перезапуска.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: Todo API
+  version: "1.0"
+paths:
+  /todos:
+    get:
+      description: Возвращает все задачи. Массив Todo лежит в поле data. Если задач
+        нет, data равен null.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список задач
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Todo'
+                  type: array
+              type: object
+      summary: Список задач
+      tags:
+      - todos
+    post:
+      consumes:
+      - application/json
+      description: Создаёт задачу, назначает ей идентификатор и возвращает объект
+        Todo в поле data.
+      parameters:
+      - description: Данные новой задачи
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateTodoRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Созданная задача
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Todo'
+              type: object
+        "400":
+          description: Невалидный запрос
+          schema:
+            type: string
+      summary: Создать задачу
+      tags:
+      - todos
+  /todos/{id}:
+    delete:
+      description: Удаляет задачу по идентификатору. Тело ответа пустое.
+      parameters:
+      - description: Идентификатор задачи
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Задача удалена
+        "400":
+          description: Неверный ID
+          schema:
+            type: string
+        "404":
+          description: Задача не найдена
+          schema:
+            type: string
+      summary: Удалить задачу
+      tags:
+      - todos
+    get:
+      description: Возвращает одну задачу. Объект Todo лежит в поле data.
+      parameters:
+      - description: Идентификатор задачи
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Найденная задача
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Todo'
+              type: object
+        "400":
+          description: Неверный ID
+          schema:
+            type: string
+        "404":
+          description: Задача не найдена
+          schema:
+            type: string
+      summary: Получить задачу
+      tags:
+      - todos
+    put:
+      consumes:
+      - application/json
+      description: Обновляет переданные поля задачи и возвращает актуальный объект
+        Todo в поле data.
+      parameters:
+      - description: Идентификатор задачи
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Поля для обновления
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateTodoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Обновлённая задача
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Todo'
+              type: object
+        "400":
+          description: Неверный ID или невалидный запрос
+          schema:
+            type: string
+        "404":
+          description: Задача не найдена
+          schema:
+            type: string
+      summary: Обновить задачу
+      tags:
+      - todos
+  /users:
+    get:
+      description: Возвращает всех пользователей. Массив User лежит в поле data. Если
+        пользователей нет, data равен null.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Список пользователей
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.SuccessResponse'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.User'
+                  type: array
+              type: object
+      summary: Список пользователей
+      tags:
+      - users
+    post:
+      consumes:
+      - application/json
+      description: Создаёт пользователя, назначает ему идентификатор и возвращает
+        объект User в поле data.
+      parameters:
+      - description: Данные нового пользователя
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Созданный пользователь
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+        "400":
+          description: Невалидный запрос
+          schema:
+            type: string
+      summary: Создать пользователя
+      tags:
+      - users
+  /users/{id}:
+    delete:
+      description: Удаляет пользователя по идентификатору. Тело ответа пустое.
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: Пользователь удалён
+        "400":
+          description: Неверный ID
+          schema:
+            type: string
+        "404":
+          description: Пользователь не найден
+          schema:
+            type: string
+      summary: Удалить пользователя
+      tags:
+      - users
+    get:
+      description: Возвращает одного пользователя. Объект User лежит в поле data.
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Найденный пользователь
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+        "400":
+          description: Неверный ID
+          schema:
+            type: string
+        "404":
+          description: Пользователь не найден
+          schema:
+            type: string
+      summary: Получить пользователя
+      tags:
+      - users
+    put:
+      consumes:
+      - application/json
+      description: Обновляет переданные поля пользователя и возвращает актуальный
+        объект User в поле data.
+      parameters:
+      - description: Идентификатор пользователя
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Поля для обновления
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Обновлённый пользователь
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.SuccessResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+        "400":
+          description: Неверный ID или невалидный запрос
+          schema:
+            type: string
+        "404":
+          description: Пользователь не найден
+          schema:
+            type: string
+      summary: Обновить пользователя
+      tags:
+      - users
+schemes:
+- http
+swagger: "2.0"

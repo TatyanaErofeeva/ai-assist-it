@@ -6,11 +6,27 @@ import (
 
 	"api-doc-example/internal/handlers"
 
+	_ "api-doc-example/docs"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
+// @title           Todo API
+// @version         1.0
+// @description     REST API для управления пользователями и задачами. Данные хранятся в памяти процесса и пропадают после перезапуска.
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   Todo API Support
+// @contact.email  support@example.com
+
+// @license.name  MIT
+// @license.url   https://opensource.org/licenses/MIT
+
+// @host      localhost:8080
+// @BasePath  /api/v1
+// @schemes   http
 func main() {
 	r := chi.NewRouter()
 
